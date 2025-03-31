@@ -21,7 +21,7 @@
 
 
     <!-- Enable JPA Repositories -->
-    <jpa:repositories base-package="com.example.repository"/>
+    <jpa:repositories base-package="com.example.todo.repository"/>
 
     <!-- Enable Transactions -->
     <tx:annotation-driven transaction-manager="transactionManager"/>
