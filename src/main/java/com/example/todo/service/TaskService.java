@@ -6,6 +6,8 @@ import com.example.todo.repository.TaskRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,9 +26,9 @@ public class TaskService {
         logger.info("TaskService initialized");
     }
 
-    public List<Task> getAllTasks() {
+    public Page<Task> getAllTasks(Pageable pageable) {
         logger.debug("Fetching all tasks");
-        return taskRepository.findAll();
+        return taskRepository.findAll(pageable);
     }
 
     public List<Task> getTasksByStatus(Status status) {

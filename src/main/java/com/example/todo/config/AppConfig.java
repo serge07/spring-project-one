@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
+import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
@@ -75,23 +76,34 @@ private static final Logger logger = LoggerFactory.getLogger(AppConfig.class);
     private Properties hibernateProperties() {
         logger.debug("Loading hibernate properties");
         Properties properties = new Properties();
-        properties.put("hibernate.dialect", env.getProperty("hibernate.dialect"));
-        properties.put("hibernate.show_sql", env.getProperty("hibernate.show_sql"));
-        properties.put("hibernate.format_sql", env.getProperty("hibernate.format_sql"));
-        properties.put("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto"));
-        properties.put("hibernate.hbm2ddl.import_files", env.getProperty("hibernate.hbm2ddl.import_files"));
-        properties.put("hibernate.hbm2ddl.import_files_sql_extractor", env.getProperty("hibernate.hbm2ddl.import_files_sql_extractor"));
+
+        // Required properties
+        properties.put("hibernate.dialect", env.getRequiredProperty("hibernate.dialect"));
+        properties.put("hibernate.show_sql", env.getProperty("hibernate.show_sql", "false"));
+        properties.put("hibernate.format_sql", env.getProperty("hibernate.format_sql", "false"));
+        properties.put("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto", "update"));
+
+        // Optional properties
+        if (env.containsProperty("hibernate.hbm2ddl.import_files")) {
+            properties.put("hibernate.hbm2ddl.import_files",
+                    env.getProperty("hibernate.hbm2ddl.import_files"));
+        }
+        if (env.containsProperty("hibernate.hbm2ddl.import_files_sql_extractor")) {
+            properties.put("hibernate.hbm2ddl.import_files_sql_extractor",
+                    env.getProperty("hibernate.hbm2ddl.import_files_sql_extractor"));
+        }
+
         return properties;
     }
 
-    @Bean
-    public DataSourceInitializer dataSourceInitializer(DataSource dataSource) {
-        logger.debug("Configuring datasource initializer");
-        DataSourceInitializer initializer = new DataSourceInitializer();
-        initializer.setDataSource(dataSource);
-        initializer.setEnabled(true);
-        return initializer;
-    }
+//    @Bean
+//    public DataSourceInitializer dataSourceInitializer(DataSource dataSource) {
+//        logger.debug("Configuring datasource initializer");
+//        DataSourceInitializer initializer = new DataSourceInitializer();
+//        initializer.setDataSource(dataSource);
+//        initializer.setEnabled(true);
+//        return initializer;
+//    }
 
     @Bean
     public SpringResourceTemplateResolver templateResolver() {
@@ -108,6 +120,9 @@ private static final Logger logger = LoggerFactory.getLogger(AppConfig.class);
         logger.debug("Configuring Thymeleaf TemplateEngine.");
         SpringTemplateEngine engine = new SpringTemplateEngine();
         engine.setTemplateResolver(templateResolver());
+
+        // Add Java 8 Time dialect for temporal formatting fixing issue date format in the view
+        engine.addDialect(new Java8TimeDialect());
         return engine;
     }
 
