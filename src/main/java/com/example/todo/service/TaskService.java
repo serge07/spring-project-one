@@ -31,9 +31,9 @@ public class TaskService {
         return taskRepository.findAll(pageable);
     }
 
-    public List<Task> getTasksByStatus(Status status) {
+    public Page<Task> getTasksByStatus(Status status, Pageable pageable) {
         logger.debug("Fetching tasks with status: {}", status);
-        return taskRepository.findByStatus(status);
+        return taskRepository.findByStatus(status, pageable);
     }
 
     public Task getTaskById(Long id) {
@@ -66,8 +66,13 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public List<Task> searchTasks(String keyword) {
+    public Page<Task> searchTasksByKeyword(String keyword, Pageable pageable) {
         logger.debug("Searching tasks with keyword: {}", keyword);
-        return taskRepository.findByDescriptionContainingIgnoreCase(keyword);
+        return taskRepository.findByDescriptionContainingIgnoreCase(keyword,pageable);
+    }
+
+    public Page<Task> searchTasksByKeywordAndStatus(String keyword, Status status,Pageable pageable) {
+        logger.debug("Searching tasks with keyword: {} and status: {}", keyword, status);
+        return taskRepository.findByDescriptionContainingIgnoreCaseAndStatus(keyword, status, pageable);
     }
 }

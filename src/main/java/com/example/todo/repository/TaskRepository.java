@@ -11,8 +11,9 @@ import java.util.List;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
-    List<Task> findByStatus(Status status);
-    List<Task> findByDescriptionContainingIgnoreCase(String description);
+    Page<Task> findByStatus(Status status, Pageable pageable);
+    Page<Task> findByDescriptionContainingIgnoreCase(String keyword, Pageable pageable);
+    Page<Task> findByDescriptionContainingIgnoreCaseAndStatus(String keyword, Status status, Pageable pageable);
 
     Page<Task> findAll(Pageable pageable);
 }

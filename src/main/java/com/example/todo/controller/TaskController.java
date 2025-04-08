@@ -32,16 +32,36 @@ public class TaskController {
         this.taskService = taskService;
     }
     @GetMapping("/tasks")
-    public String getAllTasks(@RequestParam(defaultValue = "0") int page, Model model) {
-        logger.info("Getting all tasks for page: {}", page);
+    public String getAllTasks(@RequestParam(defaultValue = "0") int page,
+                              @RequestParam(required = false) String keyword,
+                              @RequestParam(required = false) Status status,
+                              Model model) {
+        logger.info("Getting all tasks for page: {}, keyword: {}, status: {}", page, keyword, status);
 
         Pageable pageable = PageRequest.of(page, PAGE_SIZE, Sort.by("id"));
-        Page<Task> tasks = taskService.getAllTasks(pageable);
+        Page<Task> tasks;
+
+        if(keyword !=null && !keyword.isEmpty()){
+            if(status !=null){
+                tasks=taskService.searchTasksByKeywordAndStatus(keyword,status,pageable);
+            } else{
+                tasks=taskService.searchTasksByKeyword(keyword,pageable);
+
+            }
+        }else if(status !=null){
+            tasks=taskService.getTasksByStatus(status,pageable);
+        }else{
+            tasks = taskService.getAllTasks(pageable);
+        }
+
         model.addAttribute("tasks", tasks.getContent());
         model.addAttribute("totalPages", tasks.getTotalPages());
         model.addAttribute("currentPage", page);
         model.addAttribute("hasNext", tasks.hasNext());
         model.addAttribute("hasPrevious", tasks.hasPrevious());
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("status", status);
+        model.addAttribute("allStatuses", Status.values());
 
         return "task-list";
     }
@@ -73,7 +93,7 @@ public class TaskController {
     }
 
     //For handling the delete request
-    @PostMapping("/tasks/delete/{id}")
+    @GetMapping("/tasks/delete/{id}")
     public String deleteTask(@PathVariable Long id) {
         logger.info("Deleting task with id: {}", id);
         try {
@@ -105,6 +125,9 @@ public String createTask(@Valid Task task, BindingResult result) {
     return "redirect:/tasks";
 
    }
+
+
+
 
 
 }
